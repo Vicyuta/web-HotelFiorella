@@ -50,7 +50,12 @@ $userManagementPages = ['gestion_clientes.php', 'gestion_administradores.php', '
 </head>
 <body>
     <header class="panel-header">
-        <div class="logo">Hotel Fiorella</div>
+        <div class="header-left" style="display: flex; align-items: center;">
+            <button class="sidebar-toggle" aria-label="Toggle Sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">Hotel Fiorella</div>
+        </div>
         <div class="user-info">
             <span><i class="fas fa-user-shield"></i> <?php echo htmlspecialchars($nombre_usuario); ?></span>
             <a href="../actions/logout.php" class="btn btn-danger" style="margin-left: 15px;">Cerrar Sesión</a>
@@ -99,6 +104,7 @@ $userManagementPages = ['gestion_clientes.php', 'gestion_administradores.php', '
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- Script para menús desplegables del sidebar ---
             var dropdowns = document.querySelectorAll('.sidebar-dropdown .dropdown-toggle');
             dropdowns.forEach(function(dropdown) {
                 dropdown.addEventListener('click', function(event) {
@@ -107,5 +113,25 @@ $userManagementPages = ['gestion_clientes.php', 'gestion_administradores.php', '
                     parent.classList.toggle('open');
                 });
             });
+
+            // --- NUEVO: Script para el menú hamburguesa del sidebar ---
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const content = document.querySelector('.content');
+
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
+            
+            // --- NUEVO: Opcional - Cerrar sidebar al hacer clic en el contenido ---
+            if(content && sidebar) {
+                content.addEventListener('click', function() {
+                    if (sidebar.classList.contains('active')) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            }
         });
     </script>
