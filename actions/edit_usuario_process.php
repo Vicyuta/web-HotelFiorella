@@ -1,34 +1,52 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include('../includes/db.php');
 
+// Seguridad: Solo admin
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol_id'] != 1 || $_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../login.php');
     exit();
 }
 
-// Recolectar datos
 $usuario_id = $_POST['usuario_id'];
 $nombre_usuario = $_POST['nombre_usuario'];
 $rol_id = $_POST['rol_id'];
-$password = $_POST['password'];
+$estado = $_POST['estado'];
+$contrasena = $_POST['contrasena'];
 
 try {
-    // Si se proporcionó una nueva contraseña, la incluimos en la actualización
-    if (!empty($password)) {
-        $sql = "UPDATE Usuario SET NombreUsuario = ?, RolID = ?, Contrasena = ? WHERE UsuarioID = ?";
-        $params = [$nombre_usuario, $rol_id, $password, $usuario_id];
-    } else {
-        // Si no, actualizamos solo el email y el rol
-        $sql = "UPDATE Usuario SET NombreUsuario = ?, RolID = ? WHERE UsuarioID = ?";
-        $params = [$nombre_usuario, $rol_id, $usuario_id];
+    // Verificar duplicados
+    $stmt_check = $pdo->prepare("SELECT UsuarioID FROM Usuario WHERE NombreUsuario = ? AND UsuarioID != ?");
+    $stmt_check->execute([$nombre_usuario, $usuario_id]);
+    if ($stmt_check->fetch()) {
+        header('Location: ../admin/edit_usuario.php?id=' . $usuario_id . '&error=usuario_duplicado');
+        exit();
     }
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    
-    header('Location: ../admin/gestion_usuarios.php?status=edit_ok');
+
+    // Actualizar datos
+    if (!empty($contrasena)) {
+        // Con contraseña nueva
+        $pass_final = $contrasena; // O usa password_hash si ya lo implementaste
+        $sql = "UPDATE Usuario SET NombreUsuario = ?, RolID = ?, Estado = ?, Contrasena = ? WHERE UsuarioID = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$nombre_usuario, $rol_id, $estado, $pass_final, $usuario_id]);
+    } else {
+        // Sin cambiar contraseña
+        $sql = "UPDATE Usuario SET NombreUsuario = ?, RolID = ?, Estado = ? WHERE UsuarioID = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$nombre_usuario, $rol_id, $estado, $usuario_id]);
+    }
+
+    // --- CORRECCIÓN AQUÍ ---
+    // Antes redirigía a 'gestion_usuarios.php' (que no existe).
+    // Ahora redirige a 'gestion_administradores.php' para que veas el cambio.
+    header('Location: ../admin/gestion_administradores.php?success=edit_ok');
+    exit();
+
 } catch (PDOException $e) {
-    header('Location: ../admin/edit_usuario.php?id=' . $usuario_id . '&error=edit_failed');
+    header('Location: ../admin/edit_usuario.php?id=' . $usuario_id . '&error=' . urlencode($e->getMessage()));
+    exit();
 }
 ?>

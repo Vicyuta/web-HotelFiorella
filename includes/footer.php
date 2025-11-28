@@ -40,6 +40,11 @@
             <p><span class="icon"><i class="fas fa-map-marker-alt"></i></span> Av Paracas mz a lote 4, Paracas</p>
             <p><span class="icon"><i class="fas fa-phone"></i></span> (056) 545134</p>
             <p><span class="icon"><i class="fas fa-envelope"></i></span> <a href="mailto:hotelfiorella@hotmail.com" class="email">hotelfiorella@hotmail.com</a></p>
+            
+            <p>
+                <span class="icon"><i class="fab fa-whatsapp" style="color: #25D366; font-size: 1.2em;"></i></span> 
+                <a href="https://wa.me/51933234624?text=Necesito%20Ayuda" target="_blank" class="email" style="font-weight: bold; color: #25D366;">Ayuda al Cliente</a>
+            </p>
             <p><span class="icon"><i class="fa-solid fa-download"></i></span> <a href="https://upsjb-my.sharepoint.com/:b:/g/personal/brayanb_martinez_upsjb_edu_pe/EV4Ia_qN_4BAmwKBpvwdja4BrKYagTlv5jCYSchqWjsGrQ?e=9O0tr8" target="_blank" class="email">Manual de Usuario</a></p>
             <p><span class="icon"><i class="fa-solid fa-download"></i></span> <a href="https://upsjb-my.sharepoint.com/:b:/g/personal/brayanb_martinez_upsjb_edu_pe/EVBeotxwBOlBmgLt0C8U7UsBf_ZcnEXtY9nJs67EXMti3A?e=6mwbxu" target="_blank" class="email">Manual de Administrador</a></p>
             <p><span class="icon"><i class="fa-solid fa-download"></i></span> <a href="https://upsjb-my.sharepoint.com/:b:/g/personal/brayanb_martinez_upsjb_edu_pe/EVBBru-jJEdKthyVCX-IHncB_mQdptF12KGZs3LlKPJuFQ?e=lliPud" target="_blank" class="email">Manual de Programador</a></p>

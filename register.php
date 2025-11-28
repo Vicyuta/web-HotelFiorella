@@ -1,189 +1,207 @@
-<?php
-// Incluimos el header y la conexión a la BD
-include('includes/header_public.php');
-include('includes/db.php');
-
-// Consulta para llenar el dropdown de Tipos de Documento
-$tipos_doc_sql = "SELECT TipoDocumentoID, N_TipoDocumento FROM TiposDocumento WHERE Estado = '1'";
-$stmt_tipos_doc = $pdo->query($tipos_doc_sql);
-$tipos_documento = $stmt_tipos_doc->fetchAll(PDO::FETCH_ASSOC);
-
-// --- NUEVO: Consulta para llenar el dropdown de Departamentos ---
-$departamentos_sql = "SELECT DepartamentoID, N_Departamento FROM Departamento WHERE Estado = '1' ORDER BY N_Departamento";
-$stmt_departamentos = $pdo->query($departamentos_sql);
-$departamentos = $stmt_departamentos->fetchAll(PDO::FETCH_ASSOC);
-
-?>
+<?php include('includes/header_public.php'); ?>
 
 <style>
-    .register-container { display: flex; justify-content: center; padding: 40px 0; }
-    .register-box { padding: 30px; background: #fff; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px; width: 800px; }
-    .register-box h2 { text-align: center; color: var(--primary-color); margin-bottom: 25px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-    .form-group input, .form-group select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-    .full-width { grid-column: 1 / -1; }
-    .btn-register { width: 100%; padding: 12px; font-size: 1.1em; }
+    .card-registro { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    .card-header-registro { background: #0d6efd; color: white; border-radius: 15px 15px 0 0 !important; padding: 1.5rem; text-align: center; }
+    .selector-group .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; border-color: #0d6efd; box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2); }
+    .selector-group .btn-outline-primary { color: #555; border-color: #ddd; background-color: #f8f9fa; }
+    .selector-group .btn-outline-primary:hover { background-color: #e9ecef; border-color: #ccc; color: #0d6efd; }
+    .form-section-heading { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #adb5bd; margin-top: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 </style>
 
-<div class="register-container">
-    <div class="register-box">
-        <h2>Crear una Cuenta</h2>
-        
-        <?php if(isset($_GET['error'])): ?>
-            <p style="color: red; text-align:center;"><?php echo htmlspecialchars($_GET['error']); ?></p>
-        <?php endif; ?>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card card-registro">
+                <div class="card-header card-header-registro">
+                    <h3 class="mb-1 fw-bold"><i class="fas fa-user-plus me-2"></i>Crear Cuenta</h3>
+                    <p class="mb-0 opacity-75">Complete el formulario para registrarse</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold mb-2 d-block text-center">SELECCIONE TIPO DE CUENTA:</label>
+                        <div class="btn-group w-100 selector-group" role="group">
+                            <input type="radio" class="btn-check" name="btnradio" id="btnPersona" autocomplete="off" checked onclick="toggleForm('persona')">
+                            <label class="btn btn-outline-primary py-3" for="btnPersona">
+                                <i class="fas fa-user me-2 fs-5"></i><br>Persona Natural
+                            </label>
 
-        <form action="actions/register_process.php" method="POST">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="nombres">Primer Nombre:</label>
-                    <input type="text" id="nombres" name="nombres" required>
-                </div>
-                <div class="form-group">
-                    <label for="ape_paterno">Apellido Paterno:</label>
-                    <input type="text" id="ape_paterno" name="ape_paterno" required>
-                </div>
-                <div class="form-group">
-                    <label for="ape_materno">Apellido Materno:</label>
-                    <input type="text" id="ape_materno" name="ape_materno" required>
-                </div>
-                <div class="form-group">
-                    <label for="correo">Correo Electrónico (será tu usuario):</label>
-                    <input type="email" id="correo" name="correo" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Contraseña:</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label for="password_confirm">Confirmar Contraseña:</label>
-                    <input type="password" id="password_confirm" name="password_confirm" required>
-                </div>
-                <div class="form-group">
-                    <label for="tipo_documento">Tipo de Documento:</label>
-                    <select id="tipo_documento" name="tipo_documento_id" required>
-                        <option value="">Seleccione...</option>
-                        <?php foreach ($tipos_documento as $tipo): ?>
-                            <option value="<?php echo $tipo['TipoDocumentoID']; ?>"><?php echo htmlspecialchars($tipo['N_TipoDocumento']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="doc_identidad">Número de Documento:</label>
-                    <input type="text" id="doc_identidad" name="doc_identidad" required>
-                </div>
-                <div class="form-group">
-                    <label for="fec_nacimiento">Fecha de Nacimiento:</label>
-                    <input type="date" id="fec_nacimiento" name="fec_nacimiento" required>
-                </div>
-                <div class="form-group">
-                    <label for="celular">Celular:</label>
-                    <input type="tel" id="celular" name="celular" pattern="[0-9]{9}" title="Debe contener 9 dígitos">
-                </div>
-                <div class="form-group">
-                    <label for="genero">Género:</label>
-                    <select id="genero" name="genero" required>
-                        <option value="M">Masculino</option>
-                        <option value="F">Femenino</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="e_civil">Estado Civil:</label>
-                    <select id="e_civil" name="e_civil" required>
-                        <option value="Soltero/a">Soltero/a</option>
-                        <option value="Casado/a">Casado/a</option>
-                        <option value="Viudo/a">Viudo/a</option>
-                        <option value="Divorciado/a">Divorciado/a</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="departamento">Departamento:</label>
-                    <select id="departamento" name="departamento_id" required>
-                        <option value="">Seleccione un Departamento...</option>
-                        <?php foreach ($departamentos as $depto): ?>
-                            <option value="<?php echo $depto['DepartamentoID']; ?>"><?php echo htmlspecialchars($depto['N_Departamento']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                            <input type="radio" class="btn-check" name="btnradio" id="btnEmpresa" autocomplete="off" onclick="toggleForm('empresa')">
+                            <label class="btn btn-outline-primary py-3" for="btnEmpresa">
+                                <i class="fas fa-building me-2 fs-5"></i><br>Empresa (RUC)
+                            </label>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label for="provincia">Provincia:</label>
-                    <select id="provincia" name="provincia_id" required disabled>
-                        <option value="">Seleccione una Provincia...</option>
-                    </select>
-                </div>
+                    <form action="actions/register_process.php" method="POST">
+                        <input type="hidden" name="tipo_registro" id="tipo_registro" value="persona">
 
-                <div class="form-group">
-                    <label for="distrito">Distrito:</label>
-                    <select id="distrito" name="distrito_id" required disabled>
-                        <option value="">Seleccione un Distrito...</option>
-                    </select>
-                </div>
-                <div class="form-group full-width">
-                    <label for="direccion">Dirección:</label>
-                    <input type="text" id="direccion" name="direccion" required>
-                </div>
+                        <div id="form-persona">
+                            <div class="form-section-heading">Datos Personales</div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="nombres" id="nombres" placeholder="Nombres">
+                                        <label>Nombres *</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="ape_paterno" id="ape_paterno" placeholder="Apellidos">
+                                        <label>Apellido Paterno *</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="ape_materno" id="ape_materno" placeholder="Apellidos">
+                                        <label>Apellido Materno</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="doc_identidad" id="doc_identidad" placeholder="DNI">
+                                        <label>DNI / Documento *</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <?php $fecha_maxima = date('Y-m-d', strtotime('-18 years')); ?>
+                                        <input type="date" class="form-control" name="fec_nacimiento" id="fec_nacimiento" max="<?php echo $fecha_maxima; ?>">
+                                        <label>Fecha de Nacimiento *</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" name="estado_civil" id="estado_civil">
+                                            <option value="Soltero/a">Soltero/a</option>
+                                            <option value="Casado/a">Casado/a</option>
+                                            <option value="Divorciado/a">Divorciado/a</option>
+                                            <option value="Viudo/a">Viudo/a</option>
+                                        </select>
+                                        <label>Estado Civil *</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" name="genero">
+                                            <option value="M">Masculino</option>
+                                            <option value="F">Femenino</option>
+                                        </select>
+                                        <label>Género</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="celular" placeholder="Celular">
+                                        <label>Celular</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="direccion_persona" placeholder="Dirección">
+                                        <label>Dirección Domiciliaria</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="email" class="form-control" name="correo" id="correo" placeholder="Email">
+                                        <label>Correo Electrónico (Será su Usuario) *</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="form-group full-width">
-                    <button type="submit" class="btn btn-primary btn-register">Registrarme</button>
+                        <div id="form-empresa" style="display: none;">
+                            <div class="form-section-heading">Datos Corporativos</div>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="ruc" id="ruc" placeholder="RUC" maxlength="11">
+                                        <label>R.U.C. (11 dígitos) *</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="razon_social" id="razon_social" placeholder="Razón Social">
+                                        <label>Razón Social *</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="direccion_empresa" id="direccion_empresa" placeholder="Dirección Fiscal">
+                                        <label>Dirección Fiscal *</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="telefono_empresa" placeholder="Teléfono" maxlength="9">
+                                        <label>Teléfono de Contacto</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="email" class="form-control" name="correo_empresa" id="correo_empresa" placeholder="Email Empresa">
+                                        <label>Correo de la Empresa (Usuario) *</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section-heading mt-4">Seguridad</div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="alert alert-info py-2 small">
+                                    <i class="fas fa-info-circle me-1"></i> Su nombre de usuario será su <strong>Correo Electrónico</strong>.
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" name="contrasena" placeholder="Contraseña" required>
+                                    <label>Contraseña *</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold py-3 shadow-sm">
+                                Registrarme Ahora
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-muted">¿Ya tienes cuenta? <a href="login.php" class="fw-bold text-decoration-none">Inicia Sesión</a></p>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const departamentoSelect = document.getElementById('departamento');
-    const provinciaSelect = document.getElementById('provincia');
-    const distritoSelect = document.getElementById('distrito');
+function toggleForm(tipo) {
+    document.getElementById('tipo_registro').value = tipo;
+    
+    const formPersona = document.getElementById('form-persona');
+    const formEmpresa = document.getElementById('form-empresa');
+    
+    const reqPersona = ['nombres', 'ape_paterno', 'doc_identidad', 'fec_nacimiento', 'estado_civil', 'correo'];
+    const reqEmpresa = ['ruc', 'razon_social', 'direccion_empresa', 'correo_empresa'];
 
-    departamentoSelect.addEventListener('change', function() {
-        const departamentoId = this.value;
-        provinciaSelect.innerHTML = '<option value="">Cargando...</option>';
-        distritoSelect.innerHTML = '<option value="">Seleccione un Distrito...</option>';
-        provinciaSelect.disabled = true;
-        distritoSelect.disabled = true;
-
-        if (departamentoId) {
-            fetch('actions/get_locations.php?departamento_id=' + departamentoId)
-                .then(response => response.json())
-                .then(data => {
-                    let options = '<option value="">Seleccione una Provincia...</option>';
-                    data.forEach(provincia => {
-                        options += `<option value="${provincia.ProvinciaID}">${provincia.N_Provincia}</option>`;
-                    });
-                    provinciaSelect.innerHTML = options;
-                    provinciaSelect.disabled = false;
-                });
-        }
-    });
-
-    provinciaSelect.addEventListener('change', function() {
-        const provinciaId = this.value;
-        distritoSelect.innerHTML = '<option value="">Cargando...</option>';
-        distritoSelect.disabled = true;
-
-        if (provinciaId) {
-            fetch('actions/get_locations.php?provincia_id=' + provinciaId)
-                .then(response => response.json())
-                .then(data => {
-                    let options = '<option value="">Seleccione un Distrito...</option>';
-                    data.forEach(distrito => {
-                        options += `<option value="${distrito.DistritoID}">${distrito.N_Distrito}</option>`;
-                    });
-                    distritoSelect.innerHTML = options;
-                    distritoSelect.disabled = false;
-                });
-        }
-    });
-});
+    if (tipo === 'persona') {
+        formPersona.style.display = 'block';
+        formEmpresa.style.display = 'none';
+        
+        reqPersona.forEach(id => document.getElementById(id).required = true);
+        reqEmpresa.forEach(id => document.getElementById(id).required = false);
+    } else {
+        formPersona.style.display = 'none';
+        formEmpresa.style.display = 'block';
+        
+        reqPersona.forEach(id => document.getElementById(id).required = false);
+        reqEmpresa.forEach(id => document.getElementById(id).required = true);
+    }
+}
+toggleForm('persona');
 </script>
-
-
-<?php
-include('includes/footer.php');
-?>
